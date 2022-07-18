@@ -1,8 +1,20 @@
-const greeter = (person: string): string => {
-  return `Hello, ${person}!`;
-};
+const testWebhook = () => {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const data = sheet.getDataRange().getValues();
 
-function testGreeter(): void {
-  const person = "Person";
-  Logger.log(greeter(person));
-}
+  // The first row is a header
+  for (let i = 1; i < data.length; i++) {
+    const webhookURL = data[i][1];
+
+    const payload = {
+      content: "Hello",
+    };
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+    } as const;
+
+    UrlFetchApp.fetch(webhookURL, options);
+  }
+};
