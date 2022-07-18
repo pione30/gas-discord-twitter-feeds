@@ -15,6 +15,8 @@
   "author": "pione30 <g.pionelish30@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@google/clasp": "2.4.1"
+    "@google/clasp": "2.4.1",
+    "@types/google-apps-script": "1.0.53",
+    "typescript": "4.7.4"
   }
 }
