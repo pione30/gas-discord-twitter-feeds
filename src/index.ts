@@ -3,8 +3,10 @@ const testWebhook = () => {
   const data = sheet.getDataRange().getValues();
 
   // The first row is a header
-  for (let i = 1; i < data.length; i++) {
-    const webhookURL = data[i][1];
+  data.shift();
+
+  for (const row of data) {
+    const webhookURL = row[1];
 
     const payload = {
       content: "Hello",
