@@ -23,7 +23,7 @@ const fetchTwitterUserId = (userName: string): string => {
   return responseJson["data"][0]["id"];
 };
 
-const fetchTweetIds = (userId: string): string[] => {
+const fetchTweetIds = (userId: string, sinceId: string): string[] => {
   const options = {
     method: "get",
     headers: {
@@ -31,8 +31,16 @@ const fetchTweetIds = (userId: string): string[] => {
     },
   } as const;
 
+  const queryParams = [
+    "exclude=replies",
+    sinceId === ""
+      ? // The minimum permitted value is 5
+        "max_results=5"
+      : `since_id=${sinceId}`,
+  ].join("&");
+
   const response = UrlFetchApp.fetch(
-    `${twitterApiOrigin}/2/users/${userId}/tweets?exclude=replies`,
+    `${twitterApiOrigin}/2/users/${userId}/tweets?${queryParams}`,
     options
   );
 
