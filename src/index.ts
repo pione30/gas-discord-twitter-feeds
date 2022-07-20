@@ -49,29 +49,54 @@ const fetchTweetIds = (userId: string, sinceId: string): string[] => {
   return responseJson["data"].map((tweet: { id: string }) => tweet.id);
 };
 
-const testWebhook = () => {
+const main = () => {
   const sheet = SpreadsheetApp.getActiveSheet();
-  const data = sheet.getDataRange().getValues();
+  const data: string[][] = sheet.getDataRange().getValues();
 
-  // The first row is a header
-  data.shift();
+  data.forEach((row, index) => {
+    if (index === 0) {
+      // The first row is a header
+      return;
+    }
 
-  for (const row of data) {
     const twitterUserName = row[0];
     const webhookURL = row[1];
+    const sinceId = row[2];
 
     const twitterUserId = fetchTwitterUserId(twitterUserName);
-    const tweetIds = fetchTweetIds(twitterUserId);
+    const tweetIds = fetchTweetIds(twitterUserId, sinceId);
 
-    const payload = {
-      content: `https://twitter.com/${twitterUserName}/status/${tweetIds[0]}`,
-    };
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      payload: JSON.stringify(payload),
-    } as const;
+    if (sinceId === "") {
+      // Record the latest Tweet ID
+      sheet.getRange(index + 1, 2 + 1).setValue(tweetIds[0]);
+      return;
+    }
 
-    UrlFetchApp.fetch(webhookURL, options);
-  }
+    if (tweetIds.length > 0) {
+      // Record the latest Tweet ID
+      sheet.getRange(index + 1, 2 + 1).setValue(tweetIds[0]);
+
+      // Arrange tweetIds in chronological order
+      tweetIds.reverse();
+
+      for (const tweetId of tweetIds) {
+        const payload = {
+          content: `https://twitter.com/${twitterUserName}/status/${tweetId}`,
+        };
+        const options = {
+          method: "post",
+          contentType: "application/json",
+          payload: JSON.stringify(payload),
+        } as const;
+
+        try {
+          UrlFetchApp.fetch(webhookURL, options);
+        } catch (error) {
+          console.error(
+            `Failed to POST to the Discord incoming webhook: ${error}`
+          );
+        }
+      }
+    }
+  });
 };
