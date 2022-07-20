@@ -46,7 +46,7 @@ const fetchTweetIds = (userId: string, sinceId: string): string[] => {
 
   const responseJson = JSON.parse(response.getContentText("UTF-8"));
 
-  return responseJson["data"].map((tweet: { id: string }) => tweet.id);
+  return (responseJson["data"] || []).map((tweet: { id: string }) => tweet.id);
 };
 
 const main = () => {
