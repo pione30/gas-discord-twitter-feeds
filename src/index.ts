@@ -5,7 +5,7 @@ const twitterApiBearerToken = scriptProperties.getProperty(
   "TWITTER_API_BEARER_TOKEN"
 );
 
-const fetchTwitterUserId = (userName: string): string => {
+const fetchTwitterUserId = (userName: string): string | Error => {
   const options = {
     method: "get",
     headers: {
@@ -13,17 +13,21 @@ const fetchTwitterUserId = (userName: string): string => {
     },
   } as const;
 
-  const response = UrlFetchApp.fetch(
-    `${twitterApiOrigin}/2/users/by?usernames=${userName}`,
-    options
-  );
+  try {
+    const response = UrlFetchApp.fetch(
+      `${twitterApiOrigin}/2/users/by?usernames=${userName}`,
+      options
+    );
 
-  const responseJson = JSON.parse(response.getContentText("UTF-8"));
+    const responseJson = JSON.parse(response.getContentText("UTF-8"));
 
-  return responseJson["data"][0]["id"];
+    return responseJson["data"][0]["id"];
+  } catch (error) {
+    return error as Error;
+  }
 };
 
-const fetchTweetIds = (userId: string, sinceId: string): string[] => {
+const fetchTweetIds = (userId: string, sinceId: string): string[] | Error => {
   const options = {
     method: "get",
     headers: {
@@ -39,14 +43,20 @@ const fetchTweetIds = (userId: string, sinceId: string): string[] => {
       : `since_id=${sinceId}`,
   ].join("&");
 
-  const response = UrlFetchApp.fetch(
-    `${twitterApiOrigin}/2/users/${userId}/tweets?${queryParams}`,
-    options
-  );
+  try {
+    const response = UrlFetchApp.fetch(
+      `${twitterApiOrigin}/2/users/${userId}/tweets?${queryParams}`,
+      options
+    );
 
-  const responseJson = JSON.parse(response.getContentText("UTF-8"));
+    const responseJson = JSON.parse(response.getContentText("UTF-8"));
 
-  return (responseJson["data"] || []).map((tweet: { id: string }) => tweet.id);
+    return (responseJson["data"] || []).map(
+      (tweet: { id: string }) => tweet.id
+    );
+  } catch (error) {
+    return error as Error;
+  }
 };
 
 const main = () => {
@@ -64,7 +74,16 @@ const main = () => {
     const sinceId = row[2];
 
     const twitterUserId = fetchTwitterUserId(twitterUserName);
+    if (twitterUserId instanceof Error) {
+      console.error(twitterUserId);
+      return;
+    }
+
     const tweetIds = fetchTweetIds(twitterUserId, sinceId);
+    if (tweetIds instanceof Error) {
+      console.error(tweetIds);
+      return;
+    }
 
     if (sinceId === "") {
       // Record the latest Tweet ID
