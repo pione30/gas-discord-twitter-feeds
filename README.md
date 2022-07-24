@@ -25,6 +25,10 @@ Your `.clasp.json` should be like:
 
   * The second column is for the Discord incoming webhook to POST.
 
+  * The Third column is for `since_id` of Tweets to be fetched.
+
+    * You can leave this column empty but PLEASE set some header text (such as `since_id`) in `C1` cell.
+
 ### Push / Deploy
 
 The npm scripts available:
