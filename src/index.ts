@@ -36,7 +36,7 @@ const fetchTweetIds = (userId: string, sinceId: string): string[] | Error => {
   } as const;
 
   const queryParams = [
-    "exclude=replies",
+    "exclude=retweets,replies",
     sinceId === ""
       ? // The minimum permitted value is 5
         "max_results=5"
